@@ -1,5 +1,5 @@
-# Advanced Custom Fields: Image Crop Add-on #
-Contributors: andersthorborg
+# Advanced Custom Fields: Advanced Image Crop Add-on #
+Contributors: danielsetreus, andersthorborg
 Tags: afc, advanced custom fields, image crop, image, crop
 Requires at least: 3.5
 Tested up to: 4.6
@@ -7,59 +7,47 @@ Stable tag: 1.4.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-An image field making it possible/required for the user to crop the selected image to the specified image size or dimensions
+An image field making it possible/required for the user to crop the selected image to the specified image size or dimensions. Since I'm lazy this plugin will, for now, not be available through Wordpress. Get it here, and stay updared :).
 
 ## Description ##
+This is a fork of the wonderful Wordpress plugin [ACF-Image-Crop](https://github.com/andersthorborg/ACF-Image-Crop) that lets you define ACF fields for uploading an image and then crop it. In my opinion however, it was missing some key features. For more information about the original plugin, [go check it out](https://github.com/andersthorborg/ACF-Image-Crop).
 
-ACF image crop is an extended version of the native Image-field in ACF.
-The field gives the developer/administrator the option to predefine a size for the image, which the user is prompted to crop on the various edit screens. This solves the common issue of images being cropped inappropriately by the automated center-crop, that wordpress performs.
+### Features added in this fork: ###
+**Crop to a fixed with but flexible height**
+The croped image may not have a lower with than what you specify, but can however be of any height.
 
-The plugin supports the defined image sizes as well as a custom option, enabling the developer to specify the dimensions from within the field edit screen.
+**Croped to a fixed height but flexible width**
+Like the above but in reverse... you get it. 
 
-The field can be configured to enforce a hard crop or a minimal-dimension-based crop. The hard crop will lock the aspect ratio of the crop where as the minimal-dimension-based crop will not allow the user to crop the image below the specified dimensions.
+**Croped to ratio**
+The image will be croped to a defined ratio.
 
-This plugin diverts from plugins like [Manual Image Crop](http://wordpress.org/plugins/manual-image-crop/) in that when the user crops an image, a new attachment is generated, so that the relevant crop only applies in the context it is edited. It also keeps the user from dealing with the concept of various image sizes.
-
-As of version 1.0 the field can be configured to either create the cropped image as a media-item (the default behavior) or simply create it and refer directly to the file without adding it to the media library. This will prevent the media library from being cluttered with several cropped versions of the same image. When this option is selected the only available return type for the field is URL.
+**Croped to ratio with minimun width or height**
+This is really the reason I made this fork since I required all user created images to be of a specific ratio, but at the same time make sure they were all atleast x pixels wide. 
 
 ### Compatibility ###
 
 This add-on will work with:
 
-* version 4 and up
+* version 5 and up
 
 ## Installation ##
-
-This add-on can be treated as both a WP plugin and a theme include.
-
-### Plugin ###
-1. Copy the 'acf-image_crop' folder into your plugins folder
+1. Download or clone repo into your plugins folder in Wordpress
+2. Make sure you have ACF v5 installed and activated :)
 2. Activate the plugin via the Plugins admin page
 
-### Include ###
-1.	Copy the 'acf-image_crop' folder into your theme folder (can use sub folders). You can place the folder anywhere inside the 'wp-content' directory
-2.	Edit your functions.php file and add the code below (Make sure the path is correct to include the acf-image_crop.php file)
-
-`
-add_action('acf/register_fields', 'my_register_fields');
-
-function my_register_fields()
-{
-	include_once('acf-image-crop/acf-image-crop.php');
-}
-`
-
-## Screenshots ##
-
-1. Use a registered image size as the field target size
-2. Or use custom dimensions on the fly
-3. On the edit screen, select/upload an image as usual
-4. A crop-button will appear beneath the image (If desired, use the "Force user crop"-option to initialize the crop as soon as the user selects the image)
-5. The image is cropped to the desired format, using the restrictions set under field options
-6. The new format is shown using the specified preview size. The original image is kept with the field, so the image can be re-cropped at any time.
-
-
 ## Changelog ##
+
+### ACF-Image-Crop 1.4.19 -->FORK--> ACF-Advanced-Image-Crop 1.0 ###
+* Removed compatibility with ACF 4. Tested with ACF Pro 5.4
+* Added the crop options:
+    * Crop to fixed width and flexible height
+    * Crop to fixed height and flexible width
+    * Crop to ratio
+    * Crop to ratio with minimum width
+    * Crop to ratio with minimum height
+* Known issus:
+    * Does not warn user when input image is to small for the given crop rules, or when the ratio demands a image with greater width / height. The crop overlay gets a bit buggy. 
 
 ### 1.4.10 ###
 * Add compatibility with ACF Pro 5.5.5
