@@ -138,8 +138,13 @@ class acf_field_image_crop extends acf_field_image {
             'layout'        => 'horizontal',
             'class'         => 'crop-type-select',
             'choices'       => array(
-                'hard'          => __('Hard crop', 'acf-image_crop'),
-                'min'           => __('Minimal dimensions', 'acf-image_crop')
+                'hard'              => __('Hard crop', 'acf-image_crop'),
+                'min'               => __('Minimal dimensions', 'acf-image_crop'),
+                'fixed_width'       => __('Fixed width flexible height', 'acf-image-crop'),
+                'fixed_height'      => __('Fixed height flexible width', 'acf_image_crop'),
+                'ratio'             => __('Ratio of original size', 'acf_image_crop'),
+                'ratio_min_width'   => __('Ratio with minimum width', 'acf_image_crop'),
+                'ratio_min_height'  => __('Ratio with minimum height', 'acf_image_crop'),
             )
         ));
 
@@ -178,6 +183,37 @@ class acf_field_image_crop extends acf_field_image {
             'type'          => 'number',
             'name'          => 'height',
             'class'         => 'custom-target-height custom-target-dimension',
+            'append'        => 'px'
+        ));
+
+        // Ratio
+        acf_render_field_setting( $field, array(
+            'label'         => __('Ratio','acf-image_crop'),
+            'instructions'  => __('Define target ratio (i.e. 3:4). This ratio will be 
+                                    applied to the original dimensions of the image 
+                                    (with optional minimum height or width)','acf-image_crop'),
+            'type'          => 'text',
+            'name'          => 'ratio',
+            'class'         => 'custom-ratio',
+        ));
+
+        // Ratio Min Width
+        acf_render_field_setting( $field, array(
+            'label'         => __('Ratio minimum width','acf-image_crop'),
+            'instructions'  => __('Keep aspect ratio but require this minimum width','acf-image_crop'),
+            'type'          => 'number',
+            'name'          => 'ratio_min_width',
+            'class'         => 'custom-ratio',
+            'append'        => 'px'
+        ));
+
+        // Ratio Min Height
+        acf_render_field_setting( $field, array(
+            'label'         => __('Ratio minimum height','acf-image_crop'),
+            'instructions'  => __('Keep aspect ratio but require this minimum height','acf-image_crop'),
+            'type'          => 'number',
+            'name'          => 'ratio_min_height',
+            'class'         => 'custom-ratio',
             'append'        => 'px'
         ));
 
@@ -325,7 +361,10 @@ class acf_field_image_crop extends acf_field_image {
             'data-save_to_media_library' => $field['save_in_media_library'],
             'data-save_format'      => $field['save_format'],
             'data-preview_size'     => $field['preview_size'],
-            'data-library'          => $field['library']
+            'data-library'          => $field['library'],
+            'data-ratio'            => $field['ratio'],
+            'data-ratio_min_width'  => $field['ratio_min_width'],
+            'data-ratio_min_height' => $field['ratio_min_height'],
         );
         $input_atts = array(
             'type'                  => 'hidden',

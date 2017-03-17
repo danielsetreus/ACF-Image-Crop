@@ -1,3 +1,5 @@
+var ias;
+
 (function($){
     acf.fields.image_crop = acf.field.extend({
 
@@ -228,6 +230,7 @@
 
     });
 
+
 function initialize_field( $el ) {
         var $field = $el, $options = $el.find('.acf-image-uploader');
         $field.find('.acf-image-value').on('change', function(){
@@ -311,6 +314,7 @@ function initialize_field( $el ) {
 
     function initCrop($field){
         var $options = $field.find('.acf-image-uploader');
+        var $originalImage = $field.find('.crop-stage img.crop-image');
         var options = {
             handles: true,
             onSelectEnd: function (img, selection) {
@@ -320,7 +324,8 @@ function initialize_field( $el ) {
             imageWidth:$options.find('.crop-stage img.crop-image').data('width'),
             imageHeight:$options.find('.crop-stage img.crop-image').data('height'),
             x1: 0,
-            y1: 0
+            y1: 0,
+            instance: true
         };
         if($options.data('crop_type') == 'hard'){
             options.aspectRatio = $options.data('width') + ':' + $options.data('height');
@@ -345,6 +350,54 @@ function initialize_field( $el ) {
                 options.y2 = options.imageHeight;
             }
         }
+        else if($options.data('crop_type') == 'fixed_width') {
+            options.minWidth = $options.data('width');
+            options.maxWidth = $options.data('width');
+            options.x2 = $options.data('width');
+            options.y2 = Math.round($originalImage.data('height') / 2);
+        }
+        else if($options.data('crop_type') == 'fixed_height') {
+            options.minHeight = $options.data('height');
+            options.maxHeight = $options.data('height');
+            options.y2 = $options.data('height');
+            options.x2 = Math.round($originalImage.data('width') / 2);
+        }
+        else if($options.data('crop_type') == 'ratio') {
+            options.aspectRatio = $options.data('ratio');
+            var ratios = $options.data('ratio').split(':');
+
+            if(ratios[0] < ratios[1]){
+                options.y2 = $originalImage.data('height');
+                options.x2 = $originalImage.data('height') / ratios[1] * ratios[0];
+                if(options.x2 > $originalImage.data('width')) {
+                    options.y2 = $originalImage.data('width') / ratios[0] * ratios[1];
+                    options.x2 = $originalImage.data('width');
+                }
+            }
+            else {
+                options.x2 = $originalImage.data('width');
+                options.y2 = $originalImage.data('width') / ratios[0] * ratios[1];
+                if(options.y2 > $originalImage.data('height')) {
+                    options.x2 = $originalImage.data('height') / ratios[1] * ratios[0];
+                    options.y2 = $originalImage.data('height');
+                }
+            }
+        }
+        else if($options.data('crop_type') == 'ratio_min_width') {
+            options.aspectRatio = $options.data('ratio');
+            options.minWidth = $options.data('ratio_min_width');
+            var ratios = $options.data('ratio').split(':');
+            options.x2 = $options.data('ratio_min_width');
+            options.y2 = $options.data('ratio_min_width') / ratios[0] * ratios[1];
+        }
+        else if($options.data('crop_type') == 'ratio_min_height') {
+            options.aspectRatio = $options.data('ratio');
+            options.minHeight = $options.data('ratio_min_height');
+            var ratios = $options.data('ratio').split(':');
+            options.y2 = $options.data('ratio_min_height');
+            options.x2 = $options.data('ratio_min_height') / ratios[1] * ratios[0];
+        }
+
         // Center crop - disabled needs more testing
         // options.x1 = options.imageWidth/2 - (options.minWidth/2);
         // options.y1 = options.imageHeight/2 - (options.minHeight/2)
@@ -353,8 +406,8 @@ function initialize_field( $el ) {
         //options.y1 = (options.imageHeight - options.minHeight) / 2;
         if(!$field.hasClass('invalid')){
             toggleCropView($field);
-            $field.find('.crop-stage img.crop-image').imgAreaSelect(options);
-            updateCropData($field, $field.find('.crop-stage img.crop-image').get(0), {y1: options.y1, y2: options.y2, x1: options.x1, x2: options.x2});
+            ias = $field.find('.crop-stage img.crop-image').imgAreaSelect(options);
+            updateCropData($field, $field.find('.crop-stage img.crop-image').get(0), {y1: options.y1, y2: options.y2, x1: options.x1, x2: options.x2, width: options.x2, height: options.y2});
             updateThumbnail($field, $field.find('.crop-stage img.crop-image').get(0), {y1: options.y1, y2: options.y2, x1: options.x1, x2: options.x2});
         }
     }
@@ -365,6 +418,9 @@ function initialize_field( $el ) {
         $options.data('x2', selection.x2);
         $options.data('y1', selection.y1);
         $options.data('y2', selection.y2);
+        $options.data('sel-width', selection.width);
+        $options.data('sel-height', selection.height);
+        console.log(selection);
     }
 
     function updateThumbnail($field, img, selection){
@@ -399,13 +455,36 @@ function initialize_field( $el ) {
         if(!$field.find('.crop-stage').hasClass('loading')){
             $field.find('.crop-stage').addClass('loading');
             var $options = $field.find('.acf-image-uploader');
-            var targetWidth = $options.data('width');
-            var targetHeight = $options.data('height');
-            var saveToMediaLibrary = $options.data('save_to_media_library');
-            if($options.data('crop_type') == 'min'){
+            var cropType = $options.data('crop_type')
+            var targetWidth, targetHeight;
+            
+            if(cropType == 'hard') {
+                targetWidth = $options.data('width');
+                targetHeight = $options.data('height');
+            }
+            else if(cropType == 'min') {
                 targetWidth = $options.data('x2') - $options.data('x1');
                 targetHeight = $options.data('y2') - $options.data('y1');
             }
+            else if(cropType == 'fixed_width') {
+                targetWidth = $options.data('width');
+                targetHeight = $options.data('sel-height');
+            }
+            else if(cropType == 'fixed_height') {
+                targetWidth = $options.data('sel-width');
+                targetHeight = $options.data('height');
+            }
+            else if(cropType == 'ratio') {
+                targetWidth = $options.data('sel-width');
+                targetHeight = $options.data('sel-height');
+            }
+            else {
+                targetWidth = $options.data('x2') - $options.data('x1');
+                targetHeight = $options.data('y2') - $options.data('y1');
+            }
+
+            var saveToMediaLibrary = $options.data('save_to_media_library');
+
             var data = {
                 action: 'acf_image_crop_perform_crop',
                 id: $field.find('.acf-image-value').data('original-image'),
